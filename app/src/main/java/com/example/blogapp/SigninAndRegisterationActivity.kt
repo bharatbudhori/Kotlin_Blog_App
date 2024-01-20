@@ -4,12 +4,14 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.blogapp.databinding.ActivitySigninAndRegisterationBinding
 import com.example.blogapp.model.UserData
+import com.example.blogapp.register.WelcomeActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
@@ -31,7 +33,7 @@ class SigninAndRegisterationActivity : AppCompatActivity() {
 
         // Initialize Firebase Auth
         auth = FirebaseAuth.getInstance()
-        database = FirebaseDatabase.getInstance()
+        database = FirebaseDatabase.getInstance("https://blog-app-9dcc3-default-rtdb.asia-southeast1.firebasedatabase.app/")
         storage = FirebaseStorage.getInstance()
 
         //for visibility of fields
@@ -52,6 +54,36 @@ class SigninAndRegisterationActivity : AppCompatActivity() {
             binding.cardView.visibility = View.GONE
             binding.registerName.visibility = View.GONE
 
+            binding.loginButton.setOnClickListener {
+                //get data from edit text fields
+                val loginEmail = binding.loginEmailAddress.text.toString()
+                val loginPassword = binding.loginTextPassword.text.toString()
+
+                //check if fields are empty
+                if (loginEmail.isEmpty() || loginPassword.isEmpty()) {
+                    Toast.makeText(this, "Please fill all the details.", Toast.LENGTH_SHORT).show()
+                }else{
+                    //log in logcat
+                    Log.d("Login", "Email: $loginEmail")
+                    //log in user
+                    auth.signInWithEmailAndPassword(loginEmail, loginPassword)
+                        .addOnCompleteListener(this) { task ->
+                            if (task.isSuccessful) {
+                                // Sign in success, update UI with the signed-in user's information
+                                Log.d("Login", "signInWithEmail:success")
+                                Toast.makeText(this, "Login successful 😊.", Toast.LENGTH_SHORT).show()
+                                startActivity(Intent(this, MainActivity::class.java))
+                                finish()
+
+                            } else {
+                                // If sign in fails, display a message to the user.
+                                Log.d("Login", "signInWithEmail:failure", task.exception)
+                                Toast.makeText(this, "Login failed.", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                }
+            }
+
         } else if (action == "register") {
             binding.loginButton.isClickable = false
             binding.loginButton.alpha = 0.5f
@@ -66,25 +98,54 @@ class SigninAndRegisterationActivity : AppCompatActivity() {
                 if (registerName.isEmpty() || registerEmail.isEmpty() || registerPassword.isEmpty()) {
                     Toast.makeText(this, "Please fill all the details.", Toast.LENGTH_SHORT).show()
                 }else{
+                    //log in logcat
+                    Log.d("Register", "Name: $registerName")
                     //register user
                     auth.createUserWithEmailAndPassword(registerEmail, registerPassword)
                         .addOnCompleteListener(this) { task ->
                             if (task.isSuccessful) {
                                 val user = auth.currentUser
+                                //log out user after registration
+                                auth.signOut()
                                 user?.let {
                                     //add user to database
                                     val userReference = database.getReference("users")
                                     val userId = user.uid
                                     val userData = UserData(registerName, registerEmail, registerPassword)
-                                    userReference.child(userId).setValue(userData)
+                                    userReference.child(userId).setValue(userData).addOnCompleteListener(
+                                        this
+                                    ) { task ->
+                                        if (task.isSuccessful) {
+                                            Log.d("Register", "User data saved successfully")
+                                            // Sign in success, update UI with the signed-in user's information
+                                            Toast.makeText(this, "User data saved successfully", Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            Log.d("Register", "Error in user data")
+                                            // If sign in fails, display a message to the user.
+                                            Toast.makeText(this, "Error in user data", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
 
                                     //upload profile picture to storage
                                     val storageReference = storage.reference.child("profile_image/$userId.jpg")
-                                    storageReference.putFile(imageUri!!)
+                                    storageReference.putFile(imageUri!!).addOnCompleteListener(this) { task ->
+                                        if (task.isSuccessful) {
+                                            Log.d("Register", "Image uploaded successfully")
+                                            // Sign in success, update UI with the signed-in user's information
+                                            Toast.makeText(this, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            Log.d("Register", "Error in user Image")
+                                            // If sign in fails, display a message to the user.
+                                            Toast.makeText(this, "Error in user Image", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
 
                                     Toast.makeText(this, "Registration successful.", Toast.LENGTH_SHORT).show()
+                                    startActivity(Intent(this, WelcomeActivity::class.java))
+                                    finish()
                                 }
                             } else {
+                                Log.d("Register", "Registration failed.")
                                 // If sign in fails, display a message to the user.
                                 Toast.makeText(this, "Registration failed.", Toast.LENGTH_SHORT).show()
                             }
