@@ -64,20 +64,20 @@ class SigninAndRegisterationActivity : AppCompatActivity() {
                     Toast.makeText(this, "Please fill all the details.", Toast.LENGTH_SHORT).show()
                 }else{
                     //log in logcat
-                    Log.d("Login", "Email: $loginEmail")
+                    Log.d("Bharat", "Email: $loginEmail")
                     //log in user
                     auth.signInWithEmailAndPassword(loginEmail, loginPassword)
                         .addOnCompleteListener(this) { task ->
                             if (task.isSuccessful) {
                                 // Sign in success, update UI with the signed-in user's information
-                                Log.d("Login", "signInWithEmail:success")
+                                Log.d("Bharat", "signInWithEmail:success")
                                 Toast.makeText(this, "Login successful 😊.", Toast.LENGTH_SHORT).show()
                                 startActivity(Intent(this, MainActivity::class.java))
                                 finish()
 
                             } else {
                                 // If sign in fails, display a message to the user.
-                                Log.d("Login", "signInWithEmail:failure", task.exception)
+                                Log.d("Bharat", "signInWithEmail:failure", task.exception)
                                 Toast.makeText(this, "Login failed.", Toast.LENGTH_SHORT).show()
                             }
                         }
@@ -99,7 +99,7 @@ class SigninAndRegisterationActivity : AppCompatActivity() {
                     Toast.makeText(this, "Please fill all the details.", Toast.LENGTH_SHORT).show()
                 }else{
                     //log in logcat
-                    Log.d("Register", "Name: $registerName")
+                    Log.d("Bharat", "Name: $registerName")
                     //register user
                     auth.createUserWithEmailAndPassword(registerEmail, registerPassword)
                         .addOnCompleteListener(this) { task ->
@@ -116,11 +116,11 @@ class SigninAndRegisterationActivity : AppCompatActivity() {
                                         this
                                     ) { task ->
                                         if (task.isSuccessful) {
-                                            Log.d("Register", "User data saved successfully")
+                                            Log.d("Bharat", "User data saved successfully")
                                             // Sign in success, update UI with the signed-in user's information
                                             Toast.makeText(this, "User data saved successfully", Toast.LENGTH_SHORT).show()
                                         } else {
-                                            Log.d("Register", "Error in user data")
+                                            Log.d("Bharat", "Error in user data")
                                             // If sign in fails, display a message to the user.
                                             Toast.makeText(this, "Error in user data", Toast.LENGTH_SHORT).show()
                                         }
@@ -130,11 +130,21 @@ class SigninAndRegisterationActivity : AppCompatActivity() {
                                     val storageReference = storage.reference.child("profile_image/$userId.jpg")
                                     storageReference.putFile(imageUri!!).addOnCompleteListener(this) { task ->
                                         if (task.isSuccessful) {
-                                            Log.d("Register", "Image uploaded successfully")
+                                            storageReference.downloadUrl.addOnCompleteListener{
+                                                imageUri -> val imageUrl = imageUri.result.toString()
+
+                                                //update user profile image
+                                                userReference.child(userId).child("profileImage").setValue(imageUrl)
+                                                Glide.with(this)
+                                                    .load(imageUrl)
+                                                    .apply(RequestOptions.circleCropTransform())
+                                                    .into(binding.registerUserImage)
+                                            }
+                                            Log.d("Bharat", "Image uploaded successfully")
                                             // Sign in success, update UI with the signed-in user's information
                                             Toast.makeText(this, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
                                         } else {
-                                            Log.d("Register", "Error in user Image")
+                                            Log.d("Bharat", "Error in user Image")
                                             // If sign in fails, display a message to the user.
                                             Toast.makeText(this, "Error in user Image", Toast.LENGTH_SHORT).show()
                                         }
@@ -145,7 +155,7 @@ class SigninAndRegisterationActivity : AppCompatActivity() {
                                     finish()
                                 }
                             } else {
-                                Log.d("Register", "Registration failed.")
+                                Log.d("Bharat", "Registration failed.")
                                 // If sign in fails, display a message to the user.
                                 Toast.makeText(this, "Registration failed.", Toast.LENGTH_SHORT).show()
                             }
