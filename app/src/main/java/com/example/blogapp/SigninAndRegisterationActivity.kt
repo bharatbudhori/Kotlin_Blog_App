@@ -111,7 +111,7 @@ class SigninAndRegisterationActivity : AppCompatActivity() {
                                     //add user to database
                                     val userReference = database.getReference("users")
                                     val userId = user.uid
-                                    val userData = UserData(registerName, registerEmail, registerPassword)
+                                    val userData = UserData(registerName, registerEmail, registerPassword, "")
                                     userReference.child(userId).setValue(userData).addOnCompleteListener(
                                         this
                                     ) { task ->
