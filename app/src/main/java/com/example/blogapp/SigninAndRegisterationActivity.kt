@@ -125,7 +125,7 @@ class SigninAndRegisterationActivity : AppCompatActivity() {
                                             Toast.makeText(this, "Error in user data", Toast.LENGTH_SHORT).show()
                                         }
                                     }
-
+                                    Log.d("Bharat", imageUri.toString())
                                     //upload profile picture to storage
                                     val storageReference = storage.reference.child("profile_image/$userId.jpg")
                                     storageReference.putFile(imageUri!!).addOnCompleteListener(this) { task ->
@@ -134,6 +134,7 @@ class SigninAndRegisterationActivity : AppCompatActivity() {
                                                 imageUri -> val imageUrl = imageUri.result.toString()
 
                                                 //update user profile image
+                                                Log.d("Bharat", imageUrl)
                                                 userReference.child(userId).child("profileImage").setValue(imageUrl)
                                                 Glide.with(this)
                                                     .load(imageUrl)
