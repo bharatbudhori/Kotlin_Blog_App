@@ -3,6 +3,7 @@ package com.example.blogapp
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import com.example.blogapp.databinding.ActivityAddArticleBinding
 import com.example.blogapp.model.BlogItemModel
@@ -24,9 +25,9 @@ class AddArticleActivity : AppCompatActivity() {
     }
 
     private val databaseReference: DatabaseReference =
-        FirebaseDatabase.getInstance().getReference("blogs")
+        FirebaseDatabase.getInstance("https://blog-app-9dcc3-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("blogs")
     private val userReference: DatabaseReference =
-        FirebaseDatabase.getInstance().getReference("users")
+        FirebaseDatabase.getInstance("https://blog-app-9dcc3-default-rtdb.asia-southeast1.firebasedatabase.app/").getReference("users")
     private val auth = FirebaseAuth.getInstance()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,12 +56,14 @@ class AddArticleActivity : AppCompatActivity() {
                 val userImageUrl = user.photoUrl ?: ""
 
                 //fetch user name and user profile from firebase
-
+                Log.d("Bharat", "User id: $userId")
                 userReference.child(userId)
                     .addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
+                            Log.d("Bharat", "User data from DB: $snapshot")
                             val userData = snapshot.getValue(UserData::class.java)
                             if (userData != null) {
+                                Log.d("Bharat", "User name from DB: ${userData.name}")
                                 val userNameFromDB: String = userData.name
                                 val userImageUrlFromDB: String = userData.profileImage
 
@@ -77,11 +80,13 @@ class AddArticleActivity : AppCompatActivity() {
                                     )
                                 //Generate a key for the blog
                                 val key = databaseReference.push().key
+                                Log.d("Bharat", "Key: $key")
                                 if (key != null) {
                                     //save the blog to firebase
                                     val blogReference = databaseReference.child(key)
                                     blogReference.setValue(blogItem)
                                         .addOnSuccessListener {
+                                            Log.d("Bharat", "Blog added successfully")
                                             Toast.makeText(
                                                 this@AddArticleActivity,
                                                 "Blog added successfully",
@@ -91,6 +96,7 @@ class AddArticleActivity : AppCompatActivity() {
                                             finish()
                                         }
                                         .addOnFailureListener {
+                                            Log.d("Bharat", "Failed to add blog")
                                             Toast.makeText(
                                                 this@AddArticleActivity,
                                                 "Failed to add blog",
@@ -98,6 +104,8 @@ class AddArticleActivity : AppCompatActivity() {
                                             ).show()
                                         }
                                 }
+                            }else{
+                                Log.d("Bharat", "User data is null")
                             }
                         }
 
