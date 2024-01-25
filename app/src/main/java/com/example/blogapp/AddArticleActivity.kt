@@ -33,6 +33,10 @@ class AddArticleActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
+        binding.backButton.setOnClickListener{
+            finish()
+        }
+
         binding.addBlogButton.setOnClickListener {
             val title = binding.blogTitle.editText?.text.toString().trim()
             val description = binding.blogDescription.editText?.text.toString().trim()
