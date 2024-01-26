@@ -93,9 +93,41 @@ class BlogAdapter(private val items: List<BlogItemModel>) :
                 }
             }
 
+            //set the initial state of save button
+            val userReference = databaseReference.child("users").child(currentUser!!.uid)
+            val postSaveReference = userReference.child("savePosts").child(postId)
+            postSaveReference.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        binding.postSaveButton.setImageResource(R.drawable.save_articles_fill_red)
+                    } else {
+                        binding.postSaveButton.setImageResource(R.drawable.unsave_articles_red)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    //do nothing
+                }
+
+            })
+
+            //handle save button click
+            binding.postSaveButton.setOnClickListener {
+                if (currentUser != null) {
+                    handleSaveButtonClicked(postId, blogItemModel, binding)
+                } else {
+                    Toast.makeText(
+                        binding.root.context,
+                        "Please login to save the post",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
         }
 
     }
+
 
     private fun handleLikeButtonClicked(
         postId: String,
@@ -146,6 +178,62 @@ class BlogAdapter(private val items: List<BlogItemModel>) :
                             .addOnFailureListener { e ->
                                 Log.e("Bharat", "onFailure: ${e.message}", e)
                             }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    //do nothing
+                }
+
+            })
+    }
+
+    private fun handleSaveButtonClicked(
+        postId: String,
+        blogItemModel: BlogItemModel,
+        binding: BlogItemBinding
+    ) {
+        val userReference = databaseReference.child("users").child(currentUser!!.uid)
+        userReference.child("savePosts").child(postId)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        userReference.child("savePosts").child(postId).removeValue()
+                            .addOnSuccessListener {
+                                val clickedBlogItem = items.find { it.postId == postId }
+                                clickedBlogItem?.isSaved = false
+                                notifyDataSetChanged()
+
+                                val context = binding.root.context
+                                Toast.makeText(
+                                    context,
+                                    "Post removed from saved posts",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("Bharat", "onFailure: ${e.message}", e)
+                            }
+                        binding.postSaveButton.setImageResource(R.drawable.unsave_articles_red)
+                    } else {
+                        userReference.child("savePosts").child(postId).setValue(true)
+                            .addOnSuccessListener {
+                                val clickedBlogItem = items.find { it.postId == postId }
+                                clickedBlogItem?.isSaved = true
+                                notifyDataSetChanged()
+
+                                val context = binding.root.context
+                                Toast.makeText(
+                                    context,
+                                    "Post added to saved posts",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("Bharat", "onFailure: ${e.message}", e)
+                            }
+                        binding.postSaveButton.setImageResource(R.drawable.save_articles_fill_red)
                     }
                 }
 
