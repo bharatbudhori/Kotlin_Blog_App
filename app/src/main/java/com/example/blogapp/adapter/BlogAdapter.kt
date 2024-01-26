@@ -1,6 +1,7 @@
 package com.example.blogapp.adapter
 
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
@@ -81,10 +82,14 @@ class BlogAdapter(private val items: List<BlogItemModel>) :
 
             //handle like button click
             binding.likeButton.setOnClickListener {
-                if(currentUser != null){
-                    handleLikeButtonClicked(postId, blogItemModel)
-                }else{
-                    Toast.makeText(binding.root.context, "Please login to like the post", Toast.LENGTH_SHORT).show()
+                if (currentUser != null) {
+                    handleLikeButtonClicked(postId, blogItemModel, binding)
+                } else {
+                    Toast.makeText(
+                        binding.root.context,
+                        "Please login to like the post",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
 
@@ -92,26 +97,71 @@ class BlogAdapter(private val items: List<BlogItemModel>) :
 
     }
 
-    private fun handleLikeButtonClicked(postId: String, blogItemModel: BlogItemModel) {
+    private fun handleLikeButtonClicked(
+        postId: String,
+        blogItemModel: BlogItemModel,
+        binding: BlogItemBinding
+    ) {
         val userReference = databaseReference.child("users").child(currentUser!!.uid)
         val postLikeReference = databaseReference.child("blogs").child(postId).child("likes")
 
         //check if user has liked the post and update the like button accordingly
 
-        postLikeReference.child(currentUser.uid).addListenerForSingleValueEvent(object : ValueEventListener{
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if(snapshot.exists()){
+        postLikeReference.child(currentUser.uid)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        userReference.child("likes").child(postId).removeValue()
+                            .addOnSuccessListener {
+                                postLikeReference.child(currentUser.uid).removeValue()
+                                blogItemModel.likedBy.remove(currentUser.uid)
 
-                }else{
+                                updateLikeButtonImage(binding, false)
 
+                                //update like count
+                                var newLikeCount = blogItemModel.likeCount - 1
+                                blogItemModel.likeCount = newLikeCount
+                                databaseReference.child("blogs").child(postId).child("likeCount")
+                                    .setValue(newLikeCount)
+                                notifyDataSetChanged()
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("Bharat", "onFailure: ${e.message}", e)
+                            }
+                    } else {
+                        userReference.child("likes").child(postId).setValue(true)
+                            .addOnSuccessListener {
+                                postLikeReference.child(currentUser.uid).setValue(true)
+                                blogItemModel.likedBy.add(currentUser.uid)
+
+                                updateLikeButtonImage(binding, true)
+
+                                //update like count
+                                var newLikeCount = blogItemModel.likeCount + 1
+                                blogItemModel.likeCount = newLikeCount
+                                databaseReference.child("blogs").child(postId).child("likeCount")
+                                    .setValue(newLikeCount)
+                                notifyDataSetChanged()
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("Bharat", "onFailure: ${e.message}", e)
+                            }
+                    }
                 }
-            }
 
-            override fun onCancelled(error: DatabaseError) {
-                //do nothing
-            }
+                override fun onCancelled(error: DatabaseError) {
+                    //do nothing
+                }
 
-        })
+            })
+    }
+
+    private fun updateLikeButtonImage(binding: BlogItemBinding, liked: Boolean) {
+        if (liked) {
+            binding.likeButton.setImageResource(R.drawable.heart_fill_red)
+        } else {
+            binding.likeButton.setImageResource(R.drawable.heart_black)
+        }
     }
 
 }

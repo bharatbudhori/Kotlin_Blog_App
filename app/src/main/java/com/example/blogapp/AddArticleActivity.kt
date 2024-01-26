@@ -87,6 +87,7 @@ class AddArticleActivity : AppCompatActivity() {
                                 Log.d("Bharat", "Key: $key")
                                 if (key != null) {
                                     //save the blog to firebase
+                                    blogItem.postId = key
                                     val blogReference = databaseReference.child(key)
                                     blogReference.setValue(blogItem)
                                         .addOnSuccessListener {

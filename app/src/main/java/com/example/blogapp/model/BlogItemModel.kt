@@ -8,9 +8,10 @@ data class BlogItemModel(
     val userName: String? = "",
     val date: String? = "",
     val post: String? = "",
-    val likeCount: Int = 0,
+    var likeCount: Int = 0,
     val imageUrl: String? = "",
-    var postId: String? = ""
+    var postId: String? = "",
+    var likedBy: MutableList<String> = mutableListOf()
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString(),
