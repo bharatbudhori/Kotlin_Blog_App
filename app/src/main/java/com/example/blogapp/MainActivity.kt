@@ -30,6 +30,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
+        //to go to saved articles activity
+        binding.saveArticalButton.setOnClickListener {
+            startActivity(Intent(this, SavedArticlesActivity::class.java))
+        }
+
         auth = FirebaseAuth.getInstance()
         databaseReference = FirebaseDatabase.getInstance("https://blog-app-9dcc3-default-rtdb.asia-southeast1.firebasedatabase.app/").reference.child("blogs")
 
@@ -41,7 +46,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         //set blog items in recycler view
-
         //initialize adapter
         val recyclerView = binding.blogRecyclerView
         val blogAdapter = BlogAdapter(blogItems)

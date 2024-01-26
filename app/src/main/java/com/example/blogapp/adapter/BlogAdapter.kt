@@ -17,7 +17,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
-class BlogAdapter(private val items: List<BlogItemModel>) :
+class BlogAdapter(private val items: MutableList<BlogItemModel>) :
     RecyclerView.Adapter<BlogAdapter.BlogViewHolder>() {
 
     private val databaseReference =
@@ -250,6 +250,12 @@ class BlogAdapter(private val items: List<BlogItemModel>) :
         } else {
             binding.likeButton.setImageResource(R.drawable.heart_black)
         }
+    }
+
+    fun updateData(savedBlogsArticles: List<BlogItemModel>) {
+        items.clear()
+        items.addAll(savedBlogsArticles)
+        notifyDataSetChanged()
     }
 
 }
