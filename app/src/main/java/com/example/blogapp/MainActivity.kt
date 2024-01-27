@@ -35,6 +35,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SavedArticlesActivity::class.java))
         }
 
+        //to go to profile activity
+        binding.profile.setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
+        }
+
         auth = FirebaseAuth.getInstance()
         databaseReference = FirebaseDatabase.getInstance("https://blog-app-9dcc3-default-rtdb.asia-southeast1.firebasedatabase.app/").reference.child("blogs")
 
