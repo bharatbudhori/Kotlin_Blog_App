@@ -195,7 +195,7 @@ class BlogAdapter(private val items: MutableList<BlogItemModel>) :
     ) {
         val userReference = databaseReference.child("users").child(currentUser!!.uid)
         userReference.child("savePosts").child(postId)
-            .addValueEventListener(object : ValueEventListener {
+            .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (snapshot.exists()) {
                         userReference.child("savePosts").child(postId).removeValue()

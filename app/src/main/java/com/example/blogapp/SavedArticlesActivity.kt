@@ -2,6 +2,7 @@ package com.example.blogapp
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,6 +28,8 @@ class SavedArticlesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_saved_articles)
 
+        val savedItemList = mutableListOf<BlogItemModel>()
+
         //initialize adapter
         blogAdapter = BlogAdapter(savedBlogsArticles.filter { it.isSaved }.toMutableList())
 
@@ -36,7 +39,7 @@ class SavedArticlesActivity : AppCompatActivity() {
 
         val userId = auth.currentUser?.uid
         if(userId != null){
-            val userReference = FirebaseDatabase.getInstance("https://blog-app-9dcc3-default-rtdb.asia-southeast1.firebasedatabase.app/").reference.child("users").child(userId).child("saveBlogs")
+            val userReference = FirebaseDatabase.getInstance("https://blog-app-9dcc3-default-rtdb.asia-southeast1.firebasedatabase.app/").reference.child("users").child(userId).child("savePosts")
 
             userReference.addListenerForSingleValueEvent(object : ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -56,6 +59,8 @@ class SavedArticlesActivity : AppCompatActivity() {
                             }
                         }
                     }
+
+                    Log.d("Bharat", "Saved articles: ${savedBlogsArticles.size}")
                 }
 
                 override fun onCancelled(error: DatabaseError) {

@@ -4,10 +4,11 @@ import android.os.Parcel
 import android.os.Parcelable
 
 data class BlogItemModel(
-    val heading: String? = "",
+    var heading: String? = "",
     val userName: String? = "",
     val date: String? = "",
-    val post: String? = "",
+    val userId: String? = "",
+    var post: String? = "",
     var likeCount: Int = 0,
     val imageUrl: String? = "",
     var postId: String? = "",
@@ -16,6 +17,7 @@ data class BlogItemModel(
 
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
+        parcel.readString(),
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),
@@ -30,10 +32,13 @@ data class BlogItemModel(
         parcel.writeString(heading)
         parcel.writeString(userName)
         parcel.writeString(date)
+        parcel.writeString(userId)
         parcel.writeString(post)
         parcel.writeInt(likeCount)
         parcel.writeString(imageUrl)
         parcel.writeString(postId)
+        parcel.writeByte(if (isSaved) 1 else 0)
+
     }
 
     override fun describeContents(): Int {
